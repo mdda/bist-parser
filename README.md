@@ -33,7 +33,7 @@ If you use the code, please cite
 For training (development) data, we adopt the overlap images between Visual Genome training (develpment) dataset and MSCOCO training (development) dataset.
 
 #### Preprocessing ####
-1. Split Visual Genome image_data, all_region_graphs, all_attributes into 10 pieces, and named these files x_%num, where x={image_data, all_regioin_graphs, all_attributes} and num={0..9}. (The size for the every first 9 pieces is all_region_graph.size()/10). The reason to split to 10 pieces is for acclerating the preprocessing speed. 
+1. Split Visual Genome image_data, all_region_graphs, all_attributes into 10 pieces, and named these files x_%num, where x={image_data, all_regioin_graphs, all_attributes} and num={0..9}. (The size for the every first 9 pieces is all_region_graph.size()/10) and put them into preprocess/. The reason to split to 10 pieces is for acclerating the preprocessing speed. 
 2. Set nltk wornet path in line 10 in data_to_conll.py
 
 run
@@ -48,6 +48,8 @@ where NUM={0..9}, TARGET={coco_train, coco_dev}, which means there are total 20 
 
 Finally run
 ```
+python split.py coco_train merge
+python split.py coco_dev   merge
 python data_to_conll.py --input pre_coco_train.json --output coco_train.conll --train True
 python data_to_conll.py --input pre_coco_dev.json   --output coco_dev.conll   --train False
 ```
@@ -67,6 +69,7 @@ In run.sh, you can set the paramters
 ```
 time CUDA_VISIBLE_DEVICES=2 python src/parser.py --outdir ./output --train coco_train.conll --dev coco_dev.conll --epochs 30 --lstmdims 256 --lstmlayers 2  --k 3 --usehead --userl
 ```
+Please ignore .txt files which are useless
 
 #### Validation
 

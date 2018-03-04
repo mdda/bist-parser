@@ -6,6 +6,7 @@ import re
 import nltk
 import codecs
 import re
+from optparse import OptionParser
 
 NLTK_PATH = "nltk_data"
 nltk.data.path.append(NLTK_PATH)
@@ -82,15 +83,15 @@ def find_wn(node_list, word):
 
 
 def find_pos(phrase_sen, word):
-	print 'first phrase sentence: ', phrase_sen 
+	#print 'first phrase sentence: ', phrase_sen 
 	phrase_sen = ' ' + phrase_sen + ' '
-	print phrase_sen
-	print phrase_sen.find(word)
+	#print phrase_sen
+	#print phrase_sen.find(word)
 	temp = phrase_sen.replace(" "+word+" ", " TEMPTAG ")
 	temp = temp.split()
-	print "word: ", word
-	print "temp: ", temp
-	print "len temp: ", len(temp)
+	#print "word: ", word
+	#print "temp: ", temp
+	#print "len temp: ", len(temp)
 	
 	return temp.index('TEMPTAG') + len(word.split())-1
 
@@ -137,7 +138,7 @@ def lower_tuples(tuples, prop):
 	else:
 		return[[rels_pair[0].lower(), rels_pair[1].lower(), rels_pair[2].lower()] for rels_pair in tuples]
 
-print "Number of Data:  ", data_number
+#print "Number of Data:  ", data_number
 
 for data_id in range(data_number):
 
@@ -172,11 +173,11 @@ for data_id in range(data_number):
 
 	for obj in objects:
 		#obj = ' '.join(obj.split())
-		print "obj: ",obj
-		print phrasee
+		#print "obj: ",obj
+		#print phrasee
 		(isExist, id_list) = find_object(obj, phrasee)
 		if isExist:
-			print "find obj: ", obj
+			#print "find obj: ", obj
 			obj_set.add(' '.join(obj.split()))
 			for word_idx in range(len(id_list)):
 				if word_idx != len(id_list)-1:
@@ -186,110 +187,13 @@ for data_id in range(data_number):
 				node_list[id_list[word_idx]].prop = "OBJ"
 				phrasee[id_list[word_idx]]        = "OBJ_" + str(word_idx)
 
-	print "OBJ list:  ", objects
+	#print "OBJ list:  ", objects
 	for attr_pair in attributes:
 
 		if attr_pair[0] in obj_set:
 			found_idx = find_pos(phrase_sen, attr_pair[0])
 		else:
 			continue
-		for attr in attr_pair[1]:
-			print "join sent:  ", ' '.join(phrasee)
-			if (find(phrasee, attr)+1):
-				print "find attr:  ", attr
-				print "find obj: ", attr_pair[0]
-				#temp_attr = attr
-				#attr_pair.remove(attr)
-				attr_tail_id = find_pos(' '.join(phrasee), attr)
-
-				node_list[attr_tail_id].parent_id = node_list[found_idx].id
-				node_list[attr_tail_id].rel  = "ATTR"
-				node_list[attr_tail_id].prop = "ATTR"
-				for attr_id in xrange(len(attr.split())-1, 0, -1):
-					node_list[attr_tail_id - attr_id].parent_id = node_list[attr_tail_id - attr_id +1].id
-					node_list[attr_tail_id - attr_id].rel       = 'same'
-					phrasee[attr_tail_id - attr_id] = 'ATTR_%d' % (len(attr.split()) - attr_id - 1)
-
-				phrasee[attr_tail_id] = 'ATTR_%d' % (len(attr.split()) - 1)
-
-			else:
-				(isATTR, idx) = find_wn(node_list, attr)
-				if isATTR:
-					print "find attr:  ", attr
-					print "find obj: ", attr_pair[0]
-					node_list[idx].parent_id = node_list[found_idx].id
-					node_list[idx].rel  = "ATTR"
-					node_list[idx].prop = "ATTR"
-					phrasee[idx] = "ATTR_0"
-
-
-	for rel_pair in relations:
-		sub  = ' '.join(rel_pair[0].split())
-		obj  = ' '.join(rel_pair[2].split())
-		pred = rel_pair[1]
-		if (sub not in obj_set) or (obj not in obj_set):
-			continue
-
-		print "node list prop: ", node_list[1].prop
-
-		
-		sub_idx = find_pos(phrase_sen, sub)
-		obj_idx = find_pos(phrase_sen, obj)
-		
-		if (find(phrasee, pred)+1):
-			print "looking pred: ", pred
-			pred_tail_id = find_pos(phrase_sen, pred)
-			if node_list[pred_tail_id].prop != None and node_list[pred_tail_id].prop != "PRED":
-				continue
-			for pred_id in xrange(len(pred.split())-1,0,-1):
-				node_list[pred_tail_id - pred_id].parent_id = node_list[pred_tail_id - pred_id +1].id
-				node_list[pred_tail_id - pred_id].rel       = 'same'
-		else:
-			(isPred ,pred_tail_id) = find_wn(node_list, rel_pair[1])
-			if not isPred:
-				continue
-		
-		print "pred id:  ", pred_tail_id
-		print "sentence:  ", phrasee
-		node_list[pred_tail_id].prop = "PRED"
-		phrasee[pred_tail_id] = "PRED"
-		print "PPRREEDD word:  ", node_list[pred_tail_id].word
-		print "REL PAIR 1:", rel_pair[1]
-		
-		#node_list[sub_idx].rel = "SUB"
-		node_list[pred_tail_id].rel = "PRED"
-		node_list[obj_idx].rel = "OBJT"
-
-		#node_list[sub_idx].parent_id = node_list[pred_tail_id].id
-		node_list[pred_tail_id].parent_id = node_list[sub_idx].id
-		node_list[obj_idx].parent_id = node_list[pred_tail_id].id
-
-	print "phrasee before second object:  ", phrasee
-	for obj in objects:
-		if obj in obj_set:
-			continue
-		else:
-			(isObj, idx) = find_wn(node_list, obj)
-			if isObj:
-				if node_list[idx].prop != None:
-					continue
-				phrasee[idx] = "OBJ_000"
-				node_list[idx].prop = "OBJ"
-				
-				print "obj list word: ", node_list[idx].word
-				print "obj list id:  ", node_list[idx].id
-				obj_set.add(obj)
-
-	for attr_pair in attributes:
-
-		if (find(phrase_sen.split(), attr_pair[0])+1):
-			found_idx = find_pos(phrase_sen, attr_pair[0])
-
-		else:
-			found_idx = find_pos_wn(node_list, attr_pair[0], "OBJ")
-			if not isinstance(found_idx, int):
-				continue
-
 		for attr in attr_pair[1]:
 			#print "join sent:  ", ' '.join(phrasee)
 			if (find(phrasee, attr)+1):
@@ -298,7 +202,6 @@ for data_id in range(data_number):
 				#temp_attr = attr
 				#attr_pair.remove(attr)
 				attr_tail_id = find_pos(' '.join(phrasee), attr)
-				print "tail id: ", attr_tail_id
 
 				node_list[attr_tail_id].parent_id = node_list[found_idx].id
 				node_list[attr_tail_id].rel  = "ATTR"
@@ -328,8 +231,106 @@ for data_id in range(data_number):
 		if (sub not in obj_set) or (obj not in obj_set):
 			continue
 
-		print "phrase_sen  in rel: ", phrase_sen
-		print "sub in rel: ", sub
+		#print "node list prop: ", node_list[1].prop
+
+		
+		sub_idx = find_pos(phrase_sen, sub)
+		obj_idx = find_pos(phrase_sen, obj)
+		
+		if (find(phrasee, pred)+1):
+			#print "looking pred: ", pred
+			pred_tail_id = find_pos(phrase_sen, pred)
+			if node_list[pred_tail_id].prop != None and node_list[pred_tail_id].prop != "PRED":
+				continue
+			for pred_id in xrange(len(pred.split())-1,0,-1):
+				node_list[pred_tail_id - pred_id].parent_id = node_list[pred_tail_id - pred_id +1].id
+				node_list[pred_tail_id - pred_id].rel       = 'same'
+		else:
+			(isPred ,pred_tail_id) = find_wn(node_list, rel_pair[1])
+			if not isPred:
+				continue
+		
+		#print "pred id:  ", pred_tail_id
+		#print "sentence:  ", phrasee
+		node_list[pred_tail_id].prop = "PRED"
+		phrasee[pred_tail_id] = "PRED"
+		#print "PPRREEDD word:  ", node_list[pred_tail_id].word
+		#print "REL PAIR 1:", rel_pair[1]
+		
+		#node_list[sub_idx].rel = "SUB"
+		node_list[pred_tail_id].rel = "PRED"
+		node_list[obj_idx].rel = "OBJT"
+
+		#node_list[sub_idx].parent_id = node_list[pred_tail_id].id
+		node_list[pred_tail_id].parent_id = node_list[sub_idx].id
+		node_list[obj_idx].parent_id = node_list[pred_tail_id].id
+
+	#print "phrasee before second object:  ", phrasee
+	for obj in objects:
+		if obj in obj_set:
+			continue
+		else:
+			(isObj, idx) = find_wn(node_list, obj)
+			if isObj:
+				if node_list[idx].prop != None:
+					continue
+				phrasee[idx] = "OBJ_000"
+				node_list[idx].prop = "OBJ"
+				
+				#print "obj list word: ", node_list[idx].word
+				#print "obj list id:  ", node_list[idx].id
+				obj_set.add(obj)
+
+	for attr_pair in attributes:
+
+		if (find(phrase_sen.split(), attr_pair[0])+1):
+			found_idx = find_pos(phrase_sen, attr_pair[0])
+
+		else:
+			found_idx = find_pos_wn(node_list, attr_pair[0], "OBJ")
+			if not isinstance(found_idx, int):
+				continue
+
+		for attr in attr_pair[1]:
+			#print "join sent:  ", ' '.join(phrasee)
+			if (find(phrasee, attr)+1):
+				#print "find attr:  ", attr
+				#print "find obj: ", attr_pair[0]
+				#temp_attr = attr
+				#attr_pair.remove(attr)
+				attr_tail_id = find_pos(' '.join(phrasee), attr)
+				#print "tail id: ", attr_tail_id
+
+				node_list[attr_tail_id].parent_id = node_list[found_idx].id
+				node_list[attr_tail_id].rel  = "ATTR"
+				node_list[attr_tail_id].prop = "ATTR"
+				for attr_id in xrange(len(attr.split())-1, 0, -1):
+					node_list[attr_tail_id - attr_id].parent_id = node_list[attr_tail_id - attr_id +1].id
+					node_list[attr_tail_id - attr_id].rel       = 'same'
+					phrasee[attr_tail_id - attr_id] = 'ATTR_%d' % (len(attr.split()) - attr_id - 1)
+
+				phrasee[attr_tail_id] = 'ATTR_%d' % (len(attr.split()) - 1)
+
+			else:
+				(isATTR, idx) = find_wn(node_list, attr)
+				if isATTR:
+					#print "find attr:  ", attr
+					#print "find obj: ", attr_pair[0]
+					node_list[idx].parent_id = node_list[found_idx].id
+					node_list[idx].rel  = "ATTR"
+					node_list[idx].prop = "ATTR"
+					phrasee[idx] = "ATTR_0"
+
+
+	for rel_pair in relations:
+		sub  = ' '.join(rel_pair[0].split())
+		obj  = ' '.join(rel_pair[2].split())
+		pred = rel_pair[1]
+		if (sub not in obj_set) or (obj not in obj_set):
+			continue
+
+		#print "phrase_sen  in rel: ", phrase_sen
+		#print "sub in rel: ", sub
 		if (find(phrase_sen.split(), sub)+1):
 
 			sub_idx = find_pos(phrase_sen, sub)
@@ -376,12 +377,12 @@ for data_id in range(data_number):
 			if not isPred:
 				continue
 		
-		print "pred id:  ", pred_tail_id
-		print "sentence:  ", phrasee
+		#print "pred id:  ", pred_tail_id
+		#print "sentence:  ", phrasee
 		node_list[pred_tail_id].prop = "PRED"
 		phrasee[pred_tail_id] = "PRED"
-		print "PPRREEDD word:  ", node_list[pred_tail_id].word
-		print "REL PAIR 1:", rel_pair[1]
+		#print "PPRREEDD word:  ", node_list[pred_tail_id].word
+		#print "REL PAIR 1:", rel_pair[1]
 		
 		#node_list[sub_idx].rel = "SUB"
 		node_list[pred_tail_id].rel = "PRED"

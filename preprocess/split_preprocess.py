@@ -2,8 +2,9 @@ import pickle
 import cPickle as cp
 import json
 import codecs
+import sys
 
-NUM    = sys.argv[1]  #range: 0~9
+NUM    = int(sys.argv[1])  #range: 0~9
 TARGET = sys.argv[2]  #coco_train or coco_dev
 
 

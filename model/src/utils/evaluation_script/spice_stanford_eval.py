@@ -4,7 +4,7 @@ import argparse
 import nltk
 import os
 import numpy as np
-nltk.data.path.append('/media/Work_HD/yswang/nltk_data')
+nltk.data.path.append('nltk_data')
 from nltk.corpus import wordnet
 
 class RG(object):

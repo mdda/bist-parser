@@ -7,7 +7,7 @@ import json
 import numpy as np
 
 import nltk
-nltk.data.path.append('/media/Work_HD/yswang/nltk_data')
+nltk.data.path.append('nltk_data')
 from nltk.corpus import wordnet
 
 class Node:
