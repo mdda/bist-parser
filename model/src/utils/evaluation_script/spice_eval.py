@@ -333,7 +333,7 @@ def read_conll(conll_path, gold_path):
 	f    = codecs.open(conll_path, 'r', encoding='utf-8')
 	#index = [3061, 4683, 6026, 6326, 6592, 6855, 7031, 7042, 7638, 8151, 8153, 8207, 8384, 9780, 12153]
 	#index = [2573, 14812, 33807, 82665, 150294, 195522]
-	index  = [8550, 12570, 12863, 14805, 15976, 20164]
+	#index  = [8550, 12570, 12863, 14805, 15976, 20164]
 	#with open('index.txt', 'r') as fin:
 	#	for line in fin.readlines
 
