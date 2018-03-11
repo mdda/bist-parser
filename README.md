@@ -16,7 +16,7 @@ If you use the code, please cite
 
 ## Requirements
 - python 2.7
-- PyTorch v0.2
+- PyTorch v0.3
 
 ## Files
 ./model
@@ -83,6 +83,13 @@ In eval.sh, pre_coco_dev.json is the ground truth file.
 time python spice_eval.py pre_coco_dev.json output/predict_coco.conll
 ```
 Remember to set nltk_wordnet path in `./model/src/utils/evaluation_script/spice_eval.py` to use wordnet for spice metric
+
+
+#### Testing
+
+```
+python src/parser.py --predict --outdir [results directory] --test test.conll [--extrn extrn.vectors] --model [trained model file] --params [param file generate during training]
+```
 
 
 
