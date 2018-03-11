@@ -2,7 +2,7 @@
 
 #### Requirement
  - Python 2.7
- - PyTorch 0.2
+ - PyTorch 0.3
 
 #### Data Format
 The software requires `training.conll` and `development.conll` files formatted according to the [CoNLL data format](https://ilk.uvt.nl/conll/#dataformat), or a `training.conllu` and `development.conllu` files formatted according to the [CoNLLU data format](http://universaldependencies.org/format.html).
