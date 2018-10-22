@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-python split.py coco_train split
-python split.py coco_dev split
+python split.py split coco_train 
+python split.py split coco_dev   
 
 #python data_to_conll.py --input pre_coco_train.json --output coco_train.conll --train True
 

@@ -12,9 +12,9 @@ nltk.data.path.append(NLTK_PATH)
 from nltk.corpus import wordnet
 
 parser = OptionParser()
-parser.add_option("--input", dest="input_path", help="Required Processed input file", metavar="FILE", default="pre_coco_train.json")
+parser.add_option("--input",  dest="input_path", help="Required Processed input file", metavar="FILE", default="pre_coco_train.json")
 parser.add_option("--output", dest="output_path", help="Processed file output file path", metavar="FILE", default="coco_train.conll")
-parser.add_option("--train", dest="isTrain", help="Check if processed file required Training", default=True)
+parser.add_option("--train",  dest="isTrain", help="Check if processed file required Training", default=True)
 (options, args) = parser.parse_args()
 
 datapath = options.input_path

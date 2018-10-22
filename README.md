@@ -34,14 +34,24 @@ For training (development) data, we adopt the overlap images between Visual Geno
 
 #### Preprocessing ####
 
-1. Split the Visual Genome {image_data.json, region_graphs.json, attributes.json} files each into 10 pieces, and name these files ```x_%num.json```, 
-   where x={image_data, all_region_graphs, all_attributes} and num={0..9}. 
-  (The size for the every first 9 pieces is all_region_graph.size()/10) and put them into ```preprocess/data```
-  The reason to split to 10 pieces is for acclerating the preprocessing speed. 
-  
-2. Move these files into ```./preprocess/data/``` (or symlink the ```./preprocess/data``` directory to the folder with the downloaded / split data).
+TODO : Update the instructions, since parsing streaming json is *way* more efficient than manipulating these
+files in 10 sections, and stitching them back together...
 
-3. Set nltk wordnet path in line 10 in data_to_conll.py
+1. BETTER : 
+```
+cat image_data.json    | jq -n --compact-output --stream 'fromstream(1|truncate_stream(inputs))' > image_data.json.rows
+cat attributes.json    | jq -n --compact-output --stream 'fromstream(1|truncate_stream(inputs))' > attributes.json.rows
+cat region_graphs.json | jq -n --compact-output --stream 'fromstream(1|truncate_stream(inputs))' > region_graphs.json.rows
+```
+
+1. OLD : Split the Visual Genome {image_data.json, region_graphs.json, attributes.json} files each into 10 pieces, and name these files ```x_%num.json```, 
+   where x={image_data, all_region_graphs, all_attributes} and num={0..9}. 
+   (The size for the every first 9 pieces is all_region_graph.size()/10) and put them into ```preprocess/data```
+   The reason to split to 10 pieces is for acclerating the preprocessing speed. 
+  
+2. Move the ```.json.rows``` files into ```./preprocess/data/``` (or symlink the ```./preprocess/data``` directory to the folder with the downloaded / preprocessed data).
+
+3. CHECK : Set nltk wordnet path in line 10 in data_to_conll.py
 
 
 
@@ -57,8 +67,8 @@ where NUM={0..9}, TARGET={coco_train, coco_dev}, which means there are total 20 
 
 Finally run
 ```
-python split.py coco_train merge
-python split.py coco_dev   merge
+python split.py merge coco_train 
+python split.py merge coco_dev
 python data_to_conll.py --input pre_coco_train.json --output coco_train.conll --train True
 python data_to_conll.py --input pre_coco_dev.json   --output coco_dev.conll   --train False
 ```
