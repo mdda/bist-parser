@@ -63,7 +63,8 @@ then run
 ```
 python split_preprocess.py NUM TARGET
 ```
-where NUM={0..9}, TARGET={coco_train, coco_dev}, which means there are total 20 commands to run.We stronly suggest you to open multiple terminals to execute above commands to fasten the preprocesseing time.
+where NUM={0..9}, TARGET={coco_train, coco_dev}, which means there are total 20 commands to run.
+We stronly suggest you to open multiple terminals to execute above commands to fasten the preprocesseing time.
 
 Finally run
 ```
