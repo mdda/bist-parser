@@ -30,11 +30,20 @@ If you use the code, please cite
 
 ## Customized Dependency Scene Graph Parser
 #### Data Split
-For training (development) data, we adopt the overlap images between Visual Genome training (develpment) dataset and MSCOCO training (development) dataset.
+For training (development) data, we adopt the overlap images between Visual Genome training (development) dataset and MSCOCO training (development) dataset.
 
 #### Preprocessing ####
-1. Split Visual Genome image_data, all_region_graphs, all_attributes into 10 pieces, and named these files x_%num, where x={image_data, all_regioin_graphs, all_attributes} and num={0..9}. (The size for the every first 9 pieces is all_region_graph.size()/10) and put them into preprocess/. The reason to split to 10 pieces is for acclerating the preprocessing speed. 
-2. Set nltk wornet path in line 10 in data_to_conll.py
+
+1. Split the Visual Genome {image_data.json, region_graphs.json, attributes.json} files each into 10 pieces, and name these files ```x_%num.json```, 
+   where x={image_data, all_region_graphs, all_attributes} and num={0..9}. 
+  (The size for the every first 9 pieces is all_region_graph.size()/10) and put them into ```preprocess/data```
+  The reason to split to 10 pieces is for acclerating the preprocessing speed. 
+  
+2. Move these files into ```./preprocess/data/``` (or symlink the ```./preprocess/data``` directory to the folder with the downloaded / split data).
+
+3. Set nltk wordnet path in line 10 in data_to_conll.py
+
+
 
 run
 ```
