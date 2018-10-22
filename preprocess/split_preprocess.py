@@ -8,7 +8,6 @@ NUM    = int(sys.argv[1])  #range: 0~9
 TARGET = sys.argv[2]  #coco_train or coco_dev
 
 
-
 def read_attributes():
   #all_attributes = []
 
@@ -32,6 +31,7 @@ def read_attributes():
   #all_attributes = temp_all_attributes
 
   return json.load(open(TARGET+"_attr_%d.json"%NUM, 'r'))
+
 
 def read_region_graphs():
   #all_region_graphs = []
@@ -67,8 +67,8 @@ def read_region_graphs():
 
 
 def process_labels():
+  all_attributes    = read_attributes()
   all_region_graphs = read_region_graphs()
-  all_attributes   = read_attributes()
 
   all_labels = []
   
@@ -106,20 +106,20 @@ def process_labels():
 
       region_objects = []
       region_attributes = []
-      region_relaions = []
+      region_relations = []
       region_phrase = []
       obj_id_to_name = dict()
       
       if len(region['objects']) == 0:
         continue
 
-      #region_relaions.append(region['relationships'])
+      #region_relations.append(region['relationships'])
       for obj in range(len(region['objects'])):
         obj_id = region['objects'][obj]['object_id']
         obj_id_to_name[obj_id] = region['objects'][obj]['name']
         if obj_id in obj_to_attr:
-          
           region_attributes.append([region['objects'][obj]['name'] ,obj_to_attr[obj_id]])
+          
         region_objects.append(region['objects'][obj]['name'])
 
       region_phrase.append(region['phrase'])
@@ -127,15 +127,19 @@ def process_labels():
         subject_id = rel['subject_id']
         object_id  = rel['object_id']
         predicate  = rel['predicate']
-        region_relaions.append([obj_id_to_name[subject_id], predicate, obj_id_to_name[object_id]])
+        region_relations.append([obj_id_to_name[subject_id], predicate, obj_id_to_name[object_id]])
+        
       #print "objects: ", region_objects
       #print "attributes:  ", region_attributes
       #print "phrase:  ", region_phrase
-      #print "relations: ", region_relaions, '\n'
+      #print "relations: ", region_relations, '\n'
 
-      total_region_graphs.append([region_phrase, region_objects, region_attributes, region_relaions])
+      total_region_graphs.append([region_phrase, region_objects, region_attributes, region_relations])
   
     json.dump(total_region_graphs, open("pre_" + TARGET + "_%d.json"%NUM,"w"), indent=2)
+
+
+
 
 def output_phrases():
   all_region_graphs = read_region_graphs()
@@ -154,7 +158,6 @@ def output_phrases():
     for region in regions:
       count_region += 1
       print("Progress: images:  %d/%d, regions:  %d/%d" % (im, total_images, count_region, total_regions))
-
       
       if len(region['objects']) == 0:
         continue
@@ -173,6 +176,7 @@ def output():
       fout.write(input_text[i][phrase]+"\n")
 
   #print count
+
 
 def process_vg():
   all_region_graphs = read_region_graphs()
@@ -226,12 +230,9 @@ def process_vg():
 
 
 
-
 process_labels()
 
 #process_data()
-
 #output_phrases()
-
 #divide_data()
 

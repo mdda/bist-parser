@@ -18,11 +18,13 @@ parser.add_option("--train",  dest="isTrain", help="Check if processed file requ
 (options, args) = parser.parse_args()
 
 datapath = options.input_path
-
 all_region_graphs = json.load(codecs.open(datapath, "r", 'utf-8'))
+
 data_number = len(all_region_graphs)
+
 fout = codecs.open(options.output_path, 'w', encoding='utf-8') #change
 #fout.write('id\tparent_id\trel\tprop\n')
+
 TRAIN = options.isTrain
 #SHARE = False
 

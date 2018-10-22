@@ -97,9 +97,9 @@ def process_labels_orig():
   #all_region_graphs = read_region_graphs()
   #image_data = json.load(open('image_data_%d.json' %NUM,'r'))
   
-  image_iter_id = open('image_iter_id.txt', 'w')
-  image_ids = open('image_id.txt', 'w')
-  image_coco_ids = open('image_inter_coco_id.txt', 'w')
+  image_iter_id = open('./intermediate/image_iter_id.txt', 'w')
+  image_ids = open('./intermediate/image_id.txt', 'w')
+  image_coco_ids = open('./intermediate/image_inter_coco_id.txt', 'w')
   total_images = len(all_region_graphs)
 
   #assert len(all_region_graphs) == len(image_data)
@@ -129,9 +129,9 @@ def process_labels_rowwise():
   print("Total images: %d" % total_image_count)
   
   # Saving the data to these files...
-  image_iter_id  = open('image_iter_id.txt', 'w')
-  image_ids      = open('image_id.txt', 'w')
-  image_coco_ids = open('image_inter_coco_id.txt', 'w')
+  image_iter_id  = open('./intermediate/image_iter_id.txt', 'w')
+  image_ids      = open('./intermediate/image_id.txt', 'w')
+  image_coco_ids = open('./intermediate/image_inter_coco_id.txt', 'w')
 
   with open('./data/image_data.json.rows', 'r') as im_file, open('./data/region_graphs.json.rows', 'r')  as reg_file:
     for im, (image_data_json, region_graph_json) in enumerate(zip(im_file, reg_file)):
@@ -149,8 +149,9 @@ def process_labels_rowwise():
       if image_data['coco_id'] == None:
         continue
       else:
-        image_ids.write(str(region_graphs['image_id'])+'\n')
-        image_iter_id.write(str(im)+'\n')
+        # Not sure at all why these are being saved as strings...
+        image_ids     .write(str(region_graphs['image_id'])+'\n')
+        image_iter_id .write(str(im)+'\n')
         image_coco_ids.write(str(image_data['coco_id'])+'\n')
 
 
@@ -164,8 +165,8 @@ def generate_coco_split():
   train_vg_sent = []
   dev_vg_sent   = []
 
-  f_image_id = open('image_iter_id.txt', 'r')
-  coco_image_id = open('image_inter_coco_id.txt', 'r')
+  f_image_id    = open('./intermediate/image_iter_id.txt', 'r')
+  coco_image_id = open('./intermediate/image_inter_coco_id.txt', 'r')
   img_ids = []
   coco_img_ids = []
 
@@ -187,31 +188,34 @@ def generate_coco_split():
     elif int(img_id) in dev_id:
       dev_vg_sent.append(f_image_id[img_id_idx])
 
-  json.dump(train_vg_sent, open("coco_train_id.json", "w"))
-  json.dump(dev_vg_sent,   open("coco_dev_id.json", "w"))
+  json.dump(train_vg_sent, open("./intermediate/coco_train_id.json", "w"))
+  json.dump(dev_vg_sent,   open("./intermediate/coco_dev_id.json", "w"))
   
 
 def generate_random_split():
-  f_image_id = open('image_iter_id.txt', 'r')
+  f_image_id = open('./intermediate/image_iter_id.txt', 'r')
+  
   img_ids = []
   for line in f_image_id.readlines():
     line = line.strip()
     img_ids.append(line)
   f_image_id = img_ids
+  
   random.seed(1)
   random.shuffle(f_image_id)
   batch = len(f_image_id)/10
+  
   random_train_id = f_image_id[:6*batch]
   random_dev_id   = f_image_id[6*batch: 8*batch]
   random_test_id  = f_image_id[8*batch:]
 
-  json.dump(random_train_id, open("random_train_id.json", "w"))
-  json.dump(random_dev_id,   open("random_dev_id.json", "w"))
-  json.dump(random_test_id,  open("random_test_id.json", "w"))
+  json.dump(random_train_id, open("./intermediate/random_train_id.json", "w"))
+  json.dump(random_dev_id,   open("./intermediate/random_dev_id.json", "w"))
+  json.dump(random_test_id,  open("./intermediate/random_test_id.json", "w"))
 
 
 def process_ids_orig(target):
-  data_path = target+'_id.json'
+  data_path = './intermediate/'+target+'_id.json'
   id_list = json.load(open(data_path, 'r'))
 
   all_region_graphs = []
@@ -243,31 +247,32 @@ def process_ids_orig(target):
 
 
 def process_ids_rowwise(target):
-  data_path = target+'_id.json'
+  data_path = './intermediate/'+target+'_id.json'
   id_list = json.load(open(data_path, 'r'))
-  print( id_list )
-  exit(0)
+  #print( id_list )
+  id_list = [ int(i) for i in id_list ]  # Convert it all to integers
 
-  #all_region_graphs = []
-  #all_attributes    = []
+  # Find the length of the image_data file...
+  with open('./data/image_data.json.rows', 'r') as f:
+    total_image_count = len( f.readlines() )
 
-  temp_all_attributes = []
-  temp_all_region_graphs = []
+  target_attributes_rows   = open('./intermediate/'+target+'_attr.json.rows', 'w')
+  target_region_graph_rows = open('./intermediate/'+target+'_region.json.rows', 'w')
 
-  for img_id in id_list:
-    temp_all_attributes.append(all_attributes[int(img_id)])
-    temp_all_region_graphs.append(all_region_graphs[int(img_id)])
-
-  batch = len(temp_all_region_graphs)/10
-  for i in range(10):
-    if i != 9:
-      json.dump(temp_all_region_graphs[i*batch: (i+1)*batch], open(target+"_region_%d.json"%i, 'w'))
-      json.dump(temp_all_attributes[i*batch: (i+1)*batch], open(target+"_attr_%d.json"%i, 'w'))
-
-    else:
-      json.dump(temp_all_region_graphs[i*batch:], open(target+"_region_%d.json"%i, 'w'))
-      json.dump(temp_all_attributes[i*batch:], open(target+"_attr_%d.json"%i, 'w'))     
-
+  with open('./data/attributes.json.rows', 'r') as att_file, open('./data/region_graphs.json.rows', 'r')  as reg_file:
+    for im, (attributes_json, region_graph_json) in enumerate(zip(att_file, reg_file)):
+      if im % 100==0:
+        print("Progress: images:  %d/%d" % (im, total_image_count))
+        
+      if not im in id_list:
+        continue # Skip this one, since it's not in our dataset
+      
+      # No actual need to go into json, since we're just going to send it out intact anyway
+      #attributes_data = json.loads(attributes_json)
+      #region_graphs   = json.loads(region_graph_json)
+      
+      target_attributes_rows.write(attributes_json)
+      target_region_graph_rows.write(region_graph_json)
 
 
 

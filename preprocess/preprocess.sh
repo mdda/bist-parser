@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mkdir -p intermediate
+mkdir -p output
 
 python split.py split coco_train 
 python split.py split coco_dev   
