@@ -163,7 +163,6 @@ def output_phrases():
 
 
 def output():
-
   #count = 0
   input_text = pickle.load(open("input_text.p", "rb"))
   fout = codecs.open("input.txt", "wb", encoding='utf-8')
@@ -229,7 +228,10 @@ def process_vg():
 
 
 process_labels()
+
 #process_data()
+
 #output_phrases()
+
 #divide_data()
 

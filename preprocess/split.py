@@ -210,7 +210,7 @@ def generate_random_split():
   json.dump(random_test_id,  open("random_test_id.json", "w"))
 
 
-def process_ids(target):
+def process_ids_orig(target):
   data_path = target+'_id.json'
   id_list = json.load(open(data_path, 'r'))
 
@@ -229,6 +229,33 @@ def process_ids(target):
 
   temp_all_region_graphs = []
   for img_id in id_list:
+    temp_all_region_graphs.append(all_region_graphs[int(img_id)])
+
+  batch = len(temp_all_region_graphs)/10
+  for i in range(10):
+    if i != 9:
+      json.dump(temp_all_region_graphs[i*batch: (i+1)*batch], open(target+"_region_%d.json"%i, 'w'))
+      json.dump(temp_all_attributes[i*batch: (i+1)*batch], open(target+"_attr_%d.json"%i, 'w'))
+
+    else:
+      json.dump(temp_all_region_graphs[i*batch:], open(target+"_region_%d.json"%i, 'w'))
+      json.dump(temp_all_attributes[i*batch:], open(target+"_attr_%d.json"%i, 'w'))     
+
+
+def process_ids_rowwise(target):
+  data_path = target+'_id.json'
+  id_list = json.load(open(data_path, 'r'))
+  print( id_list )
+  exit(0)
+
+  #all_region_graphs = []
+  #all_attributes    = []
+
+  temp_all_attributes = []
+  temp_all_region_graphs = []
+
+  for img_id in id_list:
+    temp_all_attributes.append(all_attributes[int(img_id)])
     temp_all_region_graphs.append(all_region_graphs[int(img_id)])
 
   batch = len(temp_all_region_graphs)/10
@@ -266,7 +293,8 @@ if ACTION != 'merge':
   generate_coco_split()
   #generate_random_split()
   
-  process_ids(target)
+  #process_ids_orig(target)
+  process_ids_rowwise(target)
   
 else:
   merge_data(target)
