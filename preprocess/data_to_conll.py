@@ -1,32 +1,42 @@
 import numpy as np
-import pickle
+
 import json
 import utils as ut
+
 import re
-import nltk
 import codecs
-from optparse import OptionParser
+
+import nltk
+
+#from optparse import OptionParser  # Deprecated
+import argparse
 
 NLTK_PATH = "nltk_data"
 nltk.data.path.append(NLTK_PATH)
 from nltk.corpus import wordnet
 
-parser = OptionParser()
-parser.add_option("--input",  dest="input_path",  help="Required Processed input file", metavar="FILE", default="./output/pre_coco_train.json")
-parser.add_option("--output", dest="output_path", help="Processed file output file path", metavar="FILE", default="./output/coco_train.conll")
-parser.add_option("--train",  dest="isTrain",     help="Check if processed file required Training", default=True)
-(options, args) = parser.parse_args()
+parser = argparse.ArgumentParser()
+parser.add_argument("--input",  help="Required Processed input file",   type=str, default="./output/pre_coco_train.json")
+parser.add_argument("--output", help="Processed file output file path", type=str, default="./output/coco_train.conll")
+parser.add_argument("--train",  help="Check if processed file required Training", action='store_true')
+args = parser.parse_args()
 
-#all_region_graphs = json.load(codecs.open(datapath, "r", 'utf-8'))
-region_graphs_file = codecs.open(options.input_path, "r", 'utf-8')
-
+#all_region_graphs = json.load(codecs.open(args.input, "r", 'utf-8'))
 #data_number = len(all_region_graphs)
 
-fout = codecs.open(options.output_path, 'w', encoding='utf-8')   # already in a sensible line-appending format...
+region_graphs_file = codecs.open(args.input, "r", 'utf-8')
+
+fout = codecs.open(args.output, 'w', encoding='utf-8')   # already in a sensible line-appending format...
 #fout.write('id\tparent_id\trel\tprop\n')
 
-TRAIN = options.isTrain
+TRAIN = args.train
 #SHARE = False
+
+if TRAIN:
+  print("Train mode (may skip some duff examples)")
+else:
+  print("Evaluation mode (use all examples)")
+
 
 class Node:
   def __init__(self, idx):
@@ -162,6 +172,7 @@ for data_id, region_graphs_json in enumerate(region_graphs_file):
   input_sent = ' '.join( input_sent.split() )
   phrase_sen = " " + input_sent + " "
   phrase     = lower_tuples(input_sent.split(), 0)
+  
   objects    = lower_tuples(region_graphs_data_id[1], 1)
   attributes = lower_tuples(region_graphs_data_id[2], 2)
   relations  = lower_tuples(region_graphs_data_id[3], 3)
@@ -433,6 +444,7 @@ for data_id, region_graphs_json in enumerate(region_graphs_file):
         break
 
   if isDuplicate:
+    print("   SKIPPING due to isDuplicate")
     continue  # Skip this one - only do this for the training set...
 
   for node in node_list:

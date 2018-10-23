@@ -1,9 +1,9 @@
 #!/bin/bash
 
-preproc=../../../preprocess/output/
+preproc=../../../../preprocess/output
 
 # Evaluate Oracle : 
-time python spice_eval.py ${preproc}/pre_coco_dev.json ${preproc}/coco_dev.conll
+time python spice_eval.py ${preproc}/pre_coco_dev.json.rows ${preproc}/coco_dev.conll.oracle
 
 
 #time python spice_eval.py ${preproc}/pre_coco_dev.json ${preproc}/coco_dev.conll

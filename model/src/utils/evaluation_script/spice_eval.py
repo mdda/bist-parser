@@ -183,8 +183,8 @@ def get_tuples(sent):
     try:
       node = Node(int(word[0]), word[1], int(word[2]), word[3])
     except:
-      print sent
-      print word
+      print(sent)
+      print(word)
       node = Node(int(word[0]), word[1], -1, word[3])
       
     node_list.append(node)
@@ -192,7 +192,7 @@ def get_tuples(sent):
   tuples = find_tuples(node_list)
   return tuples
 
-
+"""SEEMS TO BE OLD CODE
 def evaluate_ospice(spice_tuple, ref_tuple):
   count_tuple = 0
 
@@ -246,7 +246,7 @@ def evaluate_ospice(spice_tuple, ref_tuple):
     exit()
 
   return sg_score
-
+"""
 
 def evaluate_spice(spice_tuple, ref_tuple):
   count_tuple = 0
@@ -324,18 +324,20 @@ def evaluate_spice(spice_tuple, ref_tuple):
 
 def check_len(conll_path, gold_path):
   count_gold = 0
-  refs = json.load(open(gold_path, 'r'))
-  f    = codecs.open(conll_path, 'r', encoding='utf-8')
+  with codecs.open(conll_path, 'r', encoding='utf-8') as f:
+    for line in f.readlines():
+      if len(line.strip())==0:
+        count_gold += 1
+        
+  print("Predictions count  : %d" % (count_gold,))
+  
+  #refs = json.load(open(gold_path, 'r'))
+  with open(gold_path, 'r') as rows:
+    refs_len = len( rows.readlines() )
+  
+  print("Ground-truth count : %d" % (refs_len,))
 
-  for line in f.readlines():
-    line = line.strip()
-    if line == '':
-      count_gold += 1
-      
-  print(count_gold)
-  print(len(refs))
-
-  assert count_gold == len(refs)
+  assert count_gold == refs_len
 
 
 def read_conll(conll_path, gold_path):
