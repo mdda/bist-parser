@@ -44,14 +44,16 @@ cat attributes.json    | jq -n --compact-output --stream 'fromstream(1|truncate_
 cat region_graphs.json | jq -n --compact-output --stream 'fromstream(1|truncate_stream(inputs))' > region_graphs.json.rows
 ```
 
+<strike>
 1. OLD : Split the Visual Genome {image_data.json, region_graphs.json, attributes.json} files each into 10 pieces, and name these files ```x_%num.json```, 
    where x={image_data, all_region_graphs, all_attributes} and num={0..9}. 
    (The size for the every first 9 pieces is all_region_graph.size()/10) and put them into ```preprocess/data```
    The reason to split to 10 pieces is for acclerating the preprocessing speed. 
-  
-2. Move the ```.json.rows``` files into ```./preprocess/data/``` (or symlink the ```./preprocess/data``` directory to the folder with the downloaded / preprocessed data).
+</strike>  
 
-3. CHECK : Set nltk wordnet path in line 10 in data_to_conll.py
+1. Move the ```.json.rows``` files into ```./preprocess/data/``` (or symlink the ```./preprocess/data``` directory to the folder with the downloaded / preprocessed data).
+
+2. CHECK : Set nltk wordnet path in line 10 in data_to_conll.py
 
 
 
@@ -59,17 +61,26 @@ run
 ```
 bash ./preprocess.sh
 ```
-then run 
+then run :
+
+<strike>
 ```
 python split_preprocess.py NUM TARGET
 ```
 where NUM={0..9}, TARGET={coco_train, coco_dev}, which means there are total 20 commands to run.
-We stronly suggest you to open multiple terminals to execute above commands to fasten the preprocesseing time.
+We strongly suggest you to open multiple terminals to execute above commands to fasten the preprocesseing time.
+</strike>
+
+```
+python split_preprocess.py 0000 coco_train
+python split_preprocess.py 0000 coco_dev
+```
+where TARGET={coco_train, coco_dev}, which means there are 2 commands to run.
 
 Finally run
 ```
-python split.py merge coco_train 
-python split.py merge coco_dev
+#NOPE python split.py merge coco_train 
+#NOPE python split.py merge coco_dev
 python data_to_conll.py --input pre_coco_train.json --output coco_train.conll --train True
 python data_to_conll.py --input pre_coco_dev.json   --output coco_dev.conll   --train False
 ```
@@ -87,7 +98,8 @@ bash run.sh
 ```
 In run.sh, you can set the paramters
 ```
-time CUDA_VISIBLE_DEVICES=2 python src/parser.py --outdir ./output --train coco_train.conll --dev coco_dev.conll --epochs 30 --lstmdims 256 --lstmlayers 2  --k 3 --usehead --userl
+time CUDA_VISIBLE_DEVICES=2 python src/parser.py --outdir ./output --train ./output/coco_train.conll --dev /output/coco_dev.conll \
+                                                 --epochs 30 --lstmdims 256 --lstmlayers 2  --k 3 --usehead --userl
 ```
 Please ignore .txt files which are useless
 

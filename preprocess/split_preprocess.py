@@ -4,8 +4,8 @@ import json
 import codecs
 import sys
 
-NUM    = int(sys.argv[1])  #range: 0~9
-TARGET = sys.argv[2]  #coco_train or coco_dev
+#NUM    = int(sys.argv[1])  # range: 0~9
+TARGET = sys.argv[2]       # coco_train or coco_dev
 
 
 def read_attributes():
@@ -71,8 +71,8 @@ def process_labels():
   all_region_graphs = read_region_graphs()
 
   all_labels = []
-  
   total_region_graphs = []
+  
   total_images = len(all_region_graphs)
   print("Total images: %d" % total_images)
   
@@ -135,10 +135,105 @@ def process_labels():
       #print "relations: ", region_relations, '\n'
 
       total_region_graphs.append([region_phrase, region_objects, region_attributes, region_relations])
-  
+    
+    # This seems to be indented too far...
     json.dump(total_region_graphs, open("pre_" + TARGET + "_%d.json"%NUM,"w"), indent=2)
 
 
+def process_labels_rowwise():
+  #all_attributes    = read_attributes()
+  #all_region_graphs = read_region_graphs()
+
+  #all_labels = []  # unused
+  
+  # Find the length of the image_data file...
+  #with open('./data/image_data.json.rows', 'r') as f:
+  #  total_image_count = len( f.readlines() )
+  ###total_images = len(all_region_graphs)
+  #print("Total images: %d" % total_image_count)
+  
+  with open('./intermediate/'+TARGET+"_attr.json.rows", 'r') as f:
+    total_image_count = len( f.readlines() )
+  print("Total images: %d" % total_image_count)
+
+  attributes_file    = open('./intermediate/'+TARGET+"_attr.json.rows", 'r')    # Not using NUM now...
+  region_graphs_file = open('./intermediate/'+TARGET+"_region.json.rows", 'r')  # Not using NUM now...
+  
+  # Cross-fingers
+  #assert len(all_region_graphs) == len(all_attributes)
+  
+  regions_output = open("./output/pre_" + TARGET + ".json.rows", "w")
+  
+  #total_region_graphs = []
+  #for im in range(len(all_region_graphs)):
+  for im, (attributes_json, region_graph_json) in enumerate(zip(attributes_file, region_graphs_file)):
+    # Load 1 row at a time for processing
+
+    region_graphs_im = json.loads(region_graph_json)
+    regions = region_graphs_im['regions']
+
+    attributes_im   = json.loads(attributes_json)
+    im_attributes = attributes_im['attributes']
+    
+    # Bring in the attributes object (reorganised) - this tracks all object_id -> attributes in image (across regions)
+    obj_to_attr = dict()
+    for attr in range(len(im_attributes)):
+      obj_id = im_attributes[attr]['object_id']
+      try:
+        obj_to_attr[obj_id] = im_attributes[attr]['attributes']
+      except:
+        continue
+
+    region_graphs = []  # Do this for each image now
+
+    total_regions = len(regions)
+    count_region = 0
+    for region in regions:
+      if len(region_graphs)>0:
+        if len(region['phrase'].strip().split()) == 0:         # Skip if there's no text
+          continue
+        if region_graphs[-1][0][0] == region['phrase']:  # Skip if the phrase for this region is the same as the last (for this image)
+          continue
+
+      count_region += 1
+      print("Progress: images:  %d/%d, regions:  %d/%d" % (im, total_image_count, count_region, total_regions))
+
+      obj_id_to_name = dict() # this tracks all object_id -> names in single region
+      
+      if len(region['objects']) == 0:
+        continue   # Skip if there are no objects in the region
+      
+      region_objects, region_attributes = [], []
+      for obj in range(len(region['objects'])):
+        obj_id = region['objects'][obj]['object_id']
+        obj_id_to_name[obj_id] = region['objects'][obj]['name']
+        if obj_id in obj_to_attr:
+          region_attributes.append( [region['objects'][obj]['name'] ,obj_to_attr[obj_id]] )
+        region_objects.append( region['objects'][obj]['name'] )
+
+      region_phrases = []
+      region_phrases.append(region['phrase'])
+      
+      region_relations = []
+      #region_relations.append(region['relationships'])
+      for rel in region['relationships']:
+        subject_id = rel['subject_id']
+        object_id  = rel['object_id']
+        predicate  = rel['predicate']
+        region_relations.append( [obj_id_to_name[subject_id], predicate, obj_id_to_name[object_id]] )
+        
+      #print "objects: ", region_objects
+      #print "attributes:  ", region_attributes
+      #print "phrase:  ", region_phrase
+      #print "relations: ", region_relations, '\n'
+
+      #total_region_graphs.append( [region_phrases, region_objects, region_attributes, region_relations] )
+      region_graphs.append( [region_phrases, region_objects, region_attributes, region_relations] )
+  
+    # Now dump out the region_graphs for just this this image
+    for region_data in region_graphs:
+      regions_output.write( json.dumps( region_data, separators=(',', ':')) )  # This is compact - and in 1 row
+      regions_output.write( "\n" )
 
 
 def output_phrases():
@@ -230,7 +325,8 @@ def process_vg():
 
 
 
-process_labels()
+#process_labels()
+process_labels_rowwise()
 
 #process_data()
 #output_phrases()
