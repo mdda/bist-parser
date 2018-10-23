@@ -381,9 +381,9 @@ def read_conll(conll_path, gold_path):
         #ref_tuples     = sw.label_data( refs[count_gold] )
         
         # Read in the next gold data item
-        #gold_json = gold_file.next()
-        #gold_data = json.loads( gold_json )
         gold_data = next(gold_data_item)
+        print("Phrase: ", gold_data[0])
+        
         ref_tuples     = sw.label_data( gold_data )
         
         print("PREDICT tuples  :\t", predict_tuples)
