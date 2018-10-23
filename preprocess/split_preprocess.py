@@ -141,17 +141,6 @@ def process_labels():
 
 
 def process_labels_rowwise():
-  #all_attributes    = read_attributes()
-  #all_region_graphs = read_region_graphs()
-
-  #all_labels = []  # unused
-  
-  # Find the length of the image_data file...
-  #with open('./data/image_data.json.rows', 'r') as f:
-  #  total_image_count = len( f.readlines() )
-  ###total_images = len(all_region_graphs)
-  #print("Total images: %d" % total_image_count)
-  
   with open('./intermediate/'+TARGET+"_attr.json.rows", 'r') as f:
     total_image_count = len( f.readlines() )
   print("Total images: %d" % total_image_count)
@@ -177,12 +166,19 @@ def process_labels_rowwise():
     
     # Bring in the attributes object (reorganised) - this tracks all object_id -> attributes in image (across regions)
     obj_to_attr = dict()
-    for attr in range(len(im_attributes)):
-      obj_id = im_attributes[attr]['object_id']
-      try:
-        obj_to_attr[obj_id] = im_attributes[attr]['attributes']
-      except:
-        continue
+    for attr in im_attributes:
+      obj_id = attr['object_id']
+      if 'attributes' in attr:
+        obj_to_attr[obj_id] = attr['attributes']
+        
+    #for attr in range(len(im_attributes)):
+    #  obj_id = im_attributes[attr]['object_id']
+    #  if 'attributes' in im_attributes[attr]:
+    #    obj_to_attr[obj_id] = im_attributes[attr]['attributes']
+    #  #try:
+    #  #  obj_to_attr[obj_id] = im_attributes[attr]['attributes']
+    #  #except:
+    #  #  continue
 
     region_graphs = []  # Do this for each image now
 
@@ -204,12 +200,21 @@ def process_labels_rowwise():
         continue   # Skip if there are no objects in the region
       
       region_objects, region_attributes = [], []
-      for obj in range(len(region['objects'])):
-        obj_id = region['objects'][obj]['object_id']
-        obj_id_to_name[obj_id] = region['objects'][obj]['name']
+      for obj in region['objects']:
+        obj_id = obj['object_id']
+        obj_name = obj['name']
+        obj_id_to_name[obj_id] = obj_name
         if obj_id in obj_to_attr:
-          region_attributes.append( [region['objects'][obj]['name'] ,obj_to_attr[obj_id]] )
-        region_objects.append( region['objects'][obj]['name'] )
+          region_attributes.append( [obj_name, obj_to_attr[obj_id]] )
+        region_objects.append( obj_name )
+        
+      #for obj in range(len(region['objects'])):
+      #  obj_id = region['objects'][obj]['object_id']
+      #  obj_name = region['objects'][obj]['name']
+      #  obj_id_to_name[obj_id] = obj_name
+      #  if obj_id in obj_to_attr:
+      #    region_attributes.append( [obj_name, obj_to_attr[obj_id]] )
+      #  region_objects.append( obj_name )
 
       region_phrases = []
       region_phrases.append(region['phrase'])
@@ -227,7 +232,6 @@ def process_labels_rowwise():
       #print "phrase:  ", region_phrase
       #print "relations: ", region_relations, '\n'
 
-      #total_region_graphs.append( [region_phrases, region_objects, region_attributes, region_relations] )
       region_graphs.append( [region_phrases, region_objects, region_attributes, region_relations] )
   
     # Now dump out the region_graphs for just this this image
@@ -238,14 +242,15 @@ def process_labels_rowwise():
 
 def output_phrases():
   all_region_graphs = read_region_graphs()
-  all_phrases = []
+  
   total_images = len(all_region_graphs)
   print("Total images: %d" % total_images)
+  
   # all phrases exclude the sentence that has no objects in scene graph
   fout = codecs.open('all_phrases.txt','w', encoding='utf-8')
 
-  for im in range(total_images):
-    
+  #all_phrases = [] UNUSED
+  for im in range(total_images):    
     regions = all_region_graphs[im]['regions']
 
     total_regions = len(regions)
