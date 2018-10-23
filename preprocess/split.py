@@ -128,7 +128,7 @@ def process_labels_rowwise():
   #assert len(all_region_graphs) == len(image_data)
   print("Total images: %d" % total_image_count)
   
-  # Saving the data to these files...
+  # We're saving the data to these files...
   image_iter_id  = open('./intermediate/image_iter_id.txt', 'w')
   image_ids      = open('./intermediate/image_id.txt', 'w')
   image_coco_ids = open('./intermediate/image_inter_coco_id.txt', 'w')
@@ -138,6 +138,7 @@ def process_labels_rowwise():
       if im % 100==0:
         print("Progress: images:  %d/%d" % (im, total_image_count))
         
+      # Load 1 row at a time for processing
       image_data    = json.loads(image_data_json)
       region_graphs = json.loads(region_graph_json)
       
@@ -162,19 +163,16 @@ def generate_coco_split():
   train_id =  pickle.load(open(train_id_path, 'r'))
   dev_id   =  pickle.load(open(dev_id_path, 'r'))
 
-  train_vg_sent = []
-  dev_vg_sent   = []
-
   f_image_id    = open('./intermediate/image_iter_id.txt', 'r')
   coco_image_id = open('./intermediate/image_inter_coco_id.txt', 'r')
+  
   img_ids = []
-  coco_img_ids = []
-
   #for line in f_image_id.readlines():
   for line in f_image_id:
     line = line.strip()
     img_ids.append(line)
 
+  coco_img_ids = []
   #for line in coco_image_id.readlines():
   for line in coco_image_id:
     line = line.strip()
@@ -182,6 +180,8 @@ def generate_coco_split():
 
   f_image_id = img_ids
 
+  train_vg_sent = []
+  dev_vg_sent   = []
   for img_id_idx, img_id in enumerate(coco_img_ids):
     if int(img_id) in train_id:
       train_vg_sent.append(f_image_id[img_id_idx])
@@ -250,7 +250,8 @@ def process_ids_rowwise(target):
   data_path = './intermediate/'+target+'_id.json'
   id_list = json.load(open(data_path, 'r'))
   #print( id_list )
-  id_list = [ int(i) for i in id_list ]  # Convert it all to integers
+  #id_list = [ int(i) for i in id_list ]  # Convert it all to integers
+  id_set = set([ int(i) for i in id_list ])  # Convert it all to integers
 
   # Find the length of the image_data file...
   with open('./data/image_data.json.rows', 'r') as f:
@@ -264,10 +265,10 @@ def process_ids_rowwise(target):
       if im % 100==0:
         print("Progress: images:  %d/%d" % (im, total_image_count))
         
-      if not im in id_list:
-        continue # Skip this one, since it's not in our dataset
+      if not im in id_set:
+        continue # Skip this one, since it's not in the dataset (i.e. : isn't in Coco, and/or same (train/dev) split)
       
-      # No actual need to go into json, since we're just going to send it out intact anyway
+      # No actual need to go parse this from its json string, since we're just going to write it out unmodified anyway
       #attributes_data = json.loads(attributes_json)
       #region_graphs   = json.loads(region_graph_json)
       
