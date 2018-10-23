@@ -1,10 +1,14 @@
 import io
 import sys
-import codecs
-import argparse
-import spice_wordnet as sw
+
 import json
+import codecs
+
+import spice_wordnet as sw
+
 import numpy as np
+
+import argparse
 
 import nltk
 nltk.data.path.append('nltk_data')
@@ -248,10 +252,11 @@ def evaluate_spice(spice_tuple, ref_tuple):
   count_tuple = 0
 
   spice_predict_tuple = spice_tuple[:]
+  
   num_ref   = len(ref_tuple)
-  num_pred = len(spice_tuple)
-  check_ref  = np.zeros((num_ref))
-  check_pred = np.zeros((num_pred))
+  num_pred  = len(spice_tuple)
+  check_ref  = np.zeros( (num_ref,) )
+  check_pred = np.zeros( (num_pred,) )
 
   ans = []
   for tup_id, tup in enumerate(ref_tuple):
@@ -395,7 +400,7 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("gold_file", type=str,
             help="Name of the CoNLL-U file with the gold data.")
-  parser.add_argument("system_file", type=str,
+  parser.add_argument("prediction_file", type=str,
             help="Name of the CoNLL-U file with the predicted data.")
             
   #parser.add_argument("epoch", type=str,
@@ -403,9 +408,9 @@ def main():
 
   args = parser.parse_args()
 
-  check_len(args.system_file, args.gold_file)
+  check_len(args.prediction_file, args.gold_file)
 
-  s_score = read_conll(args.system_file, args.gold_file)
+  s_score = read_conll(args.prediction_file, args.gold_file)
   print("SPICE score:\t %.4f" % (s_score))
 
 if __name__ == '__main__':
