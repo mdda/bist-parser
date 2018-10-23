@@ -148,7 +148,7 @@ def lower_tuples(tuples, prop):   # OMG ugly...
 
 #for data_id in range(data_number):
 for data_id, region_graphs_json in enumerate(region_graphs_file):
-  print("No. %d sentence" % (data_id,) )
+  print("Processing sentence #%d" % (data_id,) )
   region_graphs_data_id = json.loads(region_graphs_json)
   
   conll = dict()
@@ -219,7 +219,8 @@ for data_id, region_graphs_json in enumerate(region_graphs_file):
         node_list[attr_tail_id].parent_id = node_list[found_idx].id
         node_list[attr_tail_id].rel  = "ATTR"
         node_list[attr_tail_id].prop = "ATTR"
-        for attr_id in xrange(len(attr.split())-1, 0, -1):
+        #for attr_id in xrange(len(attr.split())-1, 0, -1):
+        for attr_id in range(len(attr.split())-1, 0, -1):
           node_list[attr_tail_id - attr_id].parent_id = node_list[attr_tail_id - attr_id +1].id
           node_list[attr_tail_id - attr_id].rel       = 'same'
           phrasee[attr_tail_id - attr_id] = 'ATTR_%d' % (len(attr.split()) - attr_id - 1)
@@ -255,7 +256,8 @@ for data_id, region_graphs_json in enumerate(region_graphs_file):
       pred_tail_id = find_pos(phrase_sen, pred)
       if node_list[pred_tail_id].prop != None and node_list[pred_tail_id].prop != "PRED":
         continue
-      for pred_id in xrange(len(pred.split())-1,0,-1):
+      #for pred_id in xrange(len(pred.split())-1,0,-1):
+      for pred_id in range(len(pred.split())-1, 0, -1):
         node_list[pred_tail_id - pred_id].parent_id = node_list[pred_tail_id - pred_id +1].id
         node_list[pred_tail_id - pred_id].rel       = 'same'
         
@@ -322,7 +324,8 @@ for data_id, region_graphs_json in enumerate(region_graphs_file):
         node_list[attr_tail_id].parent_id = node_list[found_idx].id
         node_list[attr_tail_id].rel  = "ATTR"
         node_list[attr_tail_id].prop = "ATTR"
-        for attr_id in xrange(len(attr.split())-1, 0, -1):
+        #for attr_id in xrange(len(attr.split())-1, 0, -1):
+        for attr_id in range(len(attr.split())-1, 0, -1):
           node_list[attr_tail_id - attr_id].parent_id = node_list[attr_tail_id - attr_id +1].id
           node_list[attr_tail_id - attr_id].rel       = 'same'
           phrasee[attr_tail_id - attr_id] = 'ATTR_%d' % (len(attr.split()) - attr_id - 1)
@@ -391,7 +394,8 @@ for data_id, region_graphs_json in enumerate(region_graphs_file):
       if node_list[pred_tail_id].prop != None and node_list[pred_tail_id].prop != "PRED":
         continue
         
-      for pred_id in xrange(len(pred.split())-1,0,-1):
+      #for pred_id in xrange(len(pred.split())-1,0,-1):
+      for pred_id in range(len(pred.split())-1, 0, -1):
         node_list[pred_tail_id - pred_id].parent_id = node_list[pred_tail_id - pred_id +1].id
         node_list[pred_tail_id - pred_id].rel       = 'same'
         
