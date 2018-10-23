@@ -14,12 +14,14 @@ import nltk
 nltk.data.path.append('nltk_data')
 from nltk.corpus import wordnet
 
+
 class Node:
   def __init__(self, id, word, parent_id, relation):
     self.id        = id
     self.word      = word
     self.parent_id = parent_id
     self.relation  = relation
+
 
 class SemanticTuple(object):
   def __init__(self, word):
@@ -137,7 +139,7 @@ def find_tuples(node_list):
   for obj in objects:
     tuples.append([' '.join(obj)])
 
-  print(preds_tail_id)
+  print("preds_tail_id :", preds_tail_id)
 
   for attr_id, attr in enumerate(attrs):
     comp_attr = ' '.join(attr)
@@ -182,15 +184,17 @@ def get_tuples(sent):
     
     try:
       node = Node(int(word[0]), word[1], int(word[2]), word[3])
-    except:
-      print(sent)
-      print(word)
+      
+    except:  # These are for word that aren't linked to other ones because word[2] is non-numeric
+      #print("get_tuples sent : ", sent)
+      #print("get_tuples word : ", word)
       node = Node(int(word[0]), word[1], -1, word[3])
       
     node_list.append(node)
 
   tuples = find_tuples(node_list)
   return tuples
+
 
 """SEEMS TO BE OLD CODE
 def evaluate_ospice(spice_tuple, ref_tuple):
@@ -308,7 +312,7 @@ def evaluate_spice(spice_tuple, ref_tuple):
   else:
     sg_score = 2*p_score*s_score/(p_score+s_score)
 
-  if True and sg_score > 1:
+  if True and sg_score > 1.:  # This shouldn't happen
     #print(ref_tuple)
     #print(spice_wordnet)
     print(len(ref_tuple))
@@ -345,31 +349,46 @@ def read_conll(conll_path, gold_path):
   print(conll_path)
   
   fout = open('spice.txt', 'w')
-  refs = json.load(open(gold_path, 'r'))
-  f    = codecs.open(conll_path, 'r', encoding='utf-8')
   
+  #refs = json.load(open(gold_path, 'r'))
+  with open(gold_path, 'r') as rows:
+    refs_len = len( rows.readlines() )
+  
+  gold_file  = open(gold_path, 'r')
+  pred_conll = codecs.open(conll_path, 'r', encoding='utf-8')
+  
+  index = []  # Does debug printing at these indices
   #index = [3061, 4683, 6026, 6326, 6592, 6855, 7031, 7042, 7638, 8151, 8153, 8207, 8384, 9780, 12153]
   #index = [2573, 14812, 33807, 82665, 150294, 195522]
   #index  = [8550, 12570, 12863, 14805, 15976, 20164]
   #with open('index.txt', 'r') as fin:
-  # for line in fin.readlines
-
-  print(len(refs))
-  #print len(f)
-  #assert len(refs) == len(f)
+  #  for line in fin.readlines
 
   s_score = 0
-  sent = []
   count_gold = 0
 
+  def iterate_through_gold_data():
+    for gold_json in gold_file:
+      yield json.loads( gold_json )
+  gold_data_item = iterate_through_gold_data()
+  
   with open('dep_parse_08_04.txt', 'w') as fdep:
-    for line in f.readlines():
+    sent = []
+    for line in pred_conll.readlines():
       line = line.strip()
-      if line == '':
+      if len(line)==0:
         predict_tuples = get_tuples(sent)
-        ref_tuples     = sw.label_data(refs[count_gold])
-        print("PREDICT tuples:\t", predict_tuples)
+        #ref_tuples     = sw.label_data( refs[count_gold] )
+        
+        # Read in the next gold data item
+        #gold_json = gold_file.next()
+        #gold_data = json.loads( gold_json )
+        gold_data = next(gold_data_item)
+        ref_tuples     = sw.label_data( gold_data )
+        
+        print("PREDICT tuples  :\t", predict_tuples)
         print("REFERENCE tuples:\t", ref_tuples)
+        
         if count_gold in index:
           fdep.write("id: "+str(count_gold)+ ' ')
           fdep.write("PRED: "+str(predict_tuples))
@@ -377,11 +396,13 @@ def read_conll(conll_path, gold_path):
           fdep.write("REF: "+str(ref_tuples))
           fdep.write('\n')
 
-        spice_score    = evaluate_spice(predict_tuples, ref_tuples)
-        print(spice_score)
+        spice_score = evaluate_spice(predict_tuples, ref_tuples)
+        print("spice_score: ", spice_score)
+        print()
         
         fout.write(str(spice_score)+'\n')
         s_score += spice_score
+        
         count_gold += 1
         sent = []
 
@@ -389,11 +410,9 @@ def read_conll(conll_path, gold_path):
         sent.append(line)
         
   print(count_gold)
-  print(len(refs))
+  assert count_gold == refs_len
 
-  assert count_gold == len(refs)
-
-  print("Num of prediction: ", count_gold)
+  print("Number of predictions :", count_gold)
 
   return s_score/float(count_gold)
 
@@ -404,16 +423,15 @@ def main():
             help="Name of the CoNLL-U file with the gold data.")
   parser.add_argument("prediction_file", type=str,
             help="Name of the CoNLL-U file with the predicted data.")
-            
   #parser.add_argument("epoch", type=str,
   #                    help="Name of the CoNLL-U file with the predicted data.")
 
   args = parser.parse_args()
 
   check_len(args.prediction_file, args.gold_file)
-
   s_score = read_conll(args.prediction_file, args.gold_file)
-  print("SPICE score:\t %.4f" % (s_score))
+  
+  print("SPICE score: %.4f" % (s_score,))
 
 if __name__ == '__main__':
   main()
