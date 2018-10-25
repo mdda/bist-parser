@@ -432,13 +432,14 @@ for data_id, region_graphs_json in enumerate(region_graphs_file):
     node_list[pred_tail_id].parent_id = node_list[sub_idx].id
     node_list[obj_idx].parent_id = node_list[pred_tail_id].id
 
+
   isDuplicate = False
   for node in node_list:
     if node.prop == 'OBJ' and node.parent_id == None:
       node.parent_id = 0
       #node.rel = 'OBJ'
       
-    if TRAIN:   #turn off when generate dev and test conll
+    if TRAIN:   # turn off when generating dev and test conll
       if node.parent_id == node.id: 
         isDuplicate = True
         break
@@ -446,6 +447,7 @@ for data_id, region_graphs_json in enumerate(region_graphs_file):
   if isDuplicate:
     print("   SKIPPING due to isDuplicate")
     continue  # Skip this one - only do this for the training set...
+
 
   for node in node_list:
     fout.write(str(node.id))
