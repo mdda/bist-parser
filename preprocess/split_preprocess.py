@@ -1,8 +1,7 @@
-import pickle
-import cPickle as cp
-import json
-import codecs
 import sys
+import json
+import pickle
+import codecs
 
 #NUM    = int(sys.argv[1])  # range: 0~9
 TARGET = sys.argv[2]       # coco_train or coco_dev
@@ -159,26 +158,25 @@ def process_labels_rowwise():
     # Load 1 row at a time for processing
 
     region_graphs_im = json.loads(region_graph_json)
-    regions = region_graphs_im['regions']
+    regions = region_graphs_im['regions']     # For this image
 
     attributes_im   = json.loads(attributes_json)
-    im_attributes = attributes_im['attributes']
+    attributes = attributes_im['attributes']  # For this image
     
-    # Bring in the attributes object (reorganised) - this tracks all object_id -> attributes in image (across regions)
-    obj_to_attr = dict()
-    for attr in im_attributes:
-      obj_id = attr['object_id']
-      if 'attributes' in attr:
-        obj_to_attr[obj_id] = attr['attributes']
+    # Bring in the attributes object (reorganised) - 
+    #   this also tracks all object_id -> attributes in image (across regions)
+    obj_to_attr = dict()  # This is per image
+    for obj in attributes:
+      obj_id = obj['object_id']
+      if 'attributes' in obj:
+        obj_to_attr[obj_id] = obj['attributes']
         
     #for attr in range(len(im_attributes)):
     #  obj_id = im_attributes[attr]['object_id']
-    #  if 'attributes' in im_attributes[attr]:
+    #  try:
     #    obj_to_attr[obj_id] = im_attributes[attr]['attributes']
-    #  #try:
-    #  #  obj_to_attr[obj_id] = im_attributes[attr]['attributes']
-    #  #except:
-    #  #  continue
+    #  except:
+    #    continue
 
     region_graphs = []  # Do this for each image now
 
@@ -197,16 +195,16 @@ def process_labels_rowwise():
       obj_id_to_name = dict() # this tracks all object_id -> names in single region
       
       if len(region['objects']) == 0:
-        continue   # Skip if there are no objects in the region
+        continue   # Skip this region if there are no objects in it
       
       region_objects, region_attributes = [], []
       for obj in region['objects']:
         obj_id = obj['object_id']
         obj_name = obj['name']
         obj_id_to_name[obj_id] = obj_name
+        region_objects.append( obj_name )
         if obj_id in obj_to_attr:
           region_attributes.append( [obj_name, obj_to_attr[obj_id]] )
-        region_objects.append( obj_name )
         
       #for obj in range(len(region['objects'])):
       #  obj_id = region['objects'][obj]['object_id']
@@ -233,6 +231,11 @@ def process_labels_rowwise():
       #print "relations: ", region_relations, '\n'
 
       region_graphs.append( [region_phrases, region_objects, region_attributes, region_relations] )
+  
+    if im==0:
+      print("ATTRIBUTES:\n", json.dumps(attributes_im, indent=2) )
+      print("\nREGIONS:\n",  json.dumps(region_graphs_im, indent=2) )
+      exit(0)
   
     # Now dump out the region_graphs for just this this image
     for region_data in region_graphs:
