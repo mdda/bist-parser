@@ -67,20 +67,25 @@ then run :
 ```
 python split_preprocess.py NUM TARGET
 ```
+
 where NUM={0..9}, TARGET={coco_train, coco_dev}, which means there are total 20 commands to run.
 We strongly suggest you to open multiple terminals to execute above commands to fasten the preprocesseing time.
 </strike>
 
+The following creates the files ```./intermediate/pre_coco_TARGET.json.rows``` :
 ```
 python split_preprocess.py 0000 coco_train
 python split_preprocess.py 0000 coco_dev
+
+#NOPE python split.py merge coco_train 
+#NOPE python split.py merge coco_dev
 ```
 where TARGET={coco_train, coco_dev}, which means there are 2 commands to run.
 
-Finally run
+Finally, run the following to convert (via the paper's Algorithm 1) ```./intermediate/pre_coco_XXX.json.rows``` 
+to ```./output/coco_XXX.conll``` :
+
 ```
-#NOPE python split.py merge coco_train 
-#NOPE python split.py merge coco_dev
 python data_to_conll.py --input pre_coco_train.json --output coco_train.conll --train True
 python data_to_conll.py --input pre_coco_dev.json   --output coco_dev.conll   --train False
 ```
