@@ -157,13 +157,15 @@ def process_labels_rowwise():
   for im, (attributes_json, region_graph_json) in enumerate(zip(attributes_file, region_graphs_file)):
     # Load 1 row at a time for processing
 
+    # This 
     region_graphs_im = json.loads(region_graph_json)
     regions = region_graphs_im['regions']     # For this image
 
+    # This contains the attributes in the image for all objects
     attributes_im   = json.loads(attributes_json)
     attributes = attributes_im['attributes']  # For this image
     
-    # Bring in the attributes object (reorganised) - 
+    # Bring in the attributes object (reorganised) for the image - 
     #   this also tracks all object_id -> attributes in image (across regions)
     obj_to_attr = dict()  # This is per image
     for obj in attributes:
@@ -180,7 +182,7 @@ def process_labels_rowwise():
 
     region_graphs = []  # Do this for each image now
 
-    total_regions = len(regions)
+    regions_in_image = len(regions)
     count_region = 0
     for region in regions:
       if len(region_graphs)>0:
@@ -190,7 +192,7 @@ def process_labels_rowwise():
           continue
 
       count_region += 1
-      print("Progress: images:  %d/%d, regions:  %d/%d" % (im, total_image_count, count_region, total_regions))
+      print("Progress: images:  %d/%d, regions:  %d/%d" % (im, total_image_count, count_region, regions_in_image))
 
       obj_id_to_name = dict() # this tracks all object_id -> names in single region
       
@@ -204,7 +206,7 @@ def process_labels_rowwise():
         obj_id_to_name[obj_id] = obj_name
         region_objects.append( obj_name )
         if obj_id in obj_to_attr:
-          region_attributes.append( [obj_name, obj_to_attr[obj_id]] )
+          region_attributes.append( [obj_name, obj_to_attr[obj_id]] )  # All the attribute in image
         
       #for obj in range(len(region['objects'])):
       #  obj_id = region['objects'][obj]['object_id']
@@ -215,7 +217,7 @@ def process_labels_rowwise():
       #  region_objects.append( obj_name )
 
       region_phrases = []
-      region_phrases.append(region['phrase'])
+      region_phrases.append(region['phrase'])  # Actually only 1 phrase per region
       
       region_relations = []
       #region_relations.append(region['relationships'])
@@ -232,7 +234,7 @@ def process_labels_rowwise():
 
       region_graphs.append( [region_phrases, region_objects, region_attributes, region_relations] )
   
-    if im==0:
+    if im<0:
       print("ATTRIBUTES:\n", json.dumps(attributes_im, indent=2) )
       print("\nREGIONS:\n",  json.dumps(region_graphs_im, indent=2) )
       exit(0)
