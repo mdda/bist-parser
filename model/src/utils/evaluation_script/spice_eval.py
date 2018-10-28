@@ -51,13 +51,14 @@ def similar(tup_syns, pred):
   else:
     for w_id in range(len(tup_syns)):
       #print("w_id:  ", w_id)
-      if len(tup_syns[w_id].intersection(pred[w_id])) == 0:
+      if len( tup_syns[w_id].intersection(pred[w_id]) ) == 0:
         return False
     return True
 
 
 def find_tuples(node_list):
   tuples = []
+  
   objects         = []
   objects_tail_id = []
   OBJTs_id = [] 
@@ -175,7 +176,7 @@ def find_tuples(node_list):
   return tuples
 
   
-def get_tuples(sent):
+def get_tuples_from_conll(sent): 
   node_list = []
   for word in sent:
     word = word.split('\t')
@@ -376,8 +377,9 @@ def read_conll(conll_path, gold_path):
     sent = []
     for line in pred_conll.readlines():
       line = line.strip()
-      if len(line)==0:
-        predict_tuples = get_tuples(sent)
+      
+      if len(line)==0:   # This is a blank row at the end of a CONLL 'record'
+        predict_tuples = get_tuples_from_conll(sent)
         #ref_tuples     = sw.label_data( refs[count_gold] )
         
         # Read in the next gold data item

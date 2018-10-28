@@ -5,19 +5,20 @@
 #import re
 
 # input json: 
-# 0: phrase
-# 1: object
-# 2: attributes with their objects
-# 3: relations
+#   0: phrase
+#   1: object
+#   2: attributes with their objects
+#   3: relations
 
 # train data
-# 0: none
-# 1: objects
-# 2: attributes
-# 3: relations
+#   0: none
+#   1: objects
+#   2: attributes
+#   3: relations
 
 
 def label_data(val_pre):
+    # Ignore the potential phrase in position [0]
     objects = val_pre[1]
     attributes = val_pre[2]
     relations = val_pre[3]
