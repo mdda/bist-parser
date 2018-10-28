@@ -140,7 +140,7 @@ def find_tuples(node_list):
   for obj in objects:
     tuples.append([' '.join(obj)])
 
-  print("preds_tail_id :", preds_tail_id)
+  #print("preds_tail_id :", preds_tail_id)
 
   for attr_id, attr in enumerate(attrs):
     comp_attr = ' '.join(attr)
@@ -374,18 +374,21 @@ def read_conll(conll_path, gold_path):
       line = line.strip()
       
       if len(line)==0:   # This is a blank row at the end of a CONLL 'record'
-        predict_tuples = get_tuples_from_conll(sent)
-        #ref_tuples     = sw.label_data( refs[count_gold] )
-        
-        # Read in the next gold data item
+        # Read in the next gold data item to compare against
         gold_data = next(gold_data_item)
-        print("Phrase: ", gold_data[0])
+        gold_image_id   = gold_data['image_id']
+        gold_region_id  = gold_data['region_id']
+        gold_refs       = gold_data['refs']
+        print("image_id=%d, region_id=%d, Phrase: " % (gold_image_id, gold_region_id), gold_refs[0])
         
-        ref_tuples     = sw.label_data( gold_data )
-        
-        print("PREDICT tuples  :\t", predict_tuples)
+        #ref_tuples     = sw.label_data( refs[count_gold] )
+        ref_tuples     = sw.label_data( gold_refs )
         print("REFERENCE tuples:\t", ref_tuples)
         
+        # Use the sentence we've accumulated from CONLL
+        predict_tuples = get_tuples_from_conll(sent)
+        print("PREDICT tuples  :\t", predict_tuples)
+
         if count_gold in index:
           fdep.write("id: "+str(count_gold)+ ' ')
           fdep.write("PRED: "+str(predict_tuples))

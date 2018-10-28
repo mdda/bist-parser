@@ -158,8 +158,13 @@ def lower_tuples(tuples, prop):   # OMG ugly...
 
 #for data_id in range(data_number):
 for data_id, region_graphs_json in enumerate(region_graphs_file):
-  print("Processing sentence #%d" % (data_id,) )
-  region_graphs_data_id = json.loads(region_graphs_json)
+  region_graphs_data_with_ids = json.loads(region_graphs_json)
+  
+  region_graphs_image_id  = region_graphs_data_with_ids['image_id']
+  region_graphs_region_id = region_graphs_data_with_ids['region_id']
+  region_graphs_data      = region_graphs_data_with_ids['refs']
+
+  print("Processing phrase in row #%d - image_id=%d, region_id=%d" % (data_id,region_graphs_image_id, region_graphs_region_id) )
   
   conll = dict()
   vocab = []
@@ -168,17 +173,17 @@ for data_id, region_graphs_json in enumerate(region_graphs_file):
   obj_set = set()
 
   # Clean up the phrase 
-  input_sent = re.sub( '"',' ', ' '.join( region_graphs_data_id[0][0].lower().split() ))
+  input_sent = re.sub( '"',' ', ' '.join( region_graphs_data[0][0].lower().split() ))
   input_sent = ' '.join( input_sent.split() )
   phrase_sen = " " + input_sent + " "
   phrase     = lower_tuples(input_sent.split(), 0)
   
-  objects    = lower_tuples(region_graphs_data_id[1], 1)
-  attributes = lower_tuples(region_graphs_data_id[2], 2)
-  relations  = lower_tuples(region_graphs_data_id[3], 3)
+  objects    = lower_tuples(region_graphs_data[1], 1)
+  attributes = lower_tuples(region_graphs_data[2], 2)
+  relations  = lower_tuples(region_graphs_data[3], 3)
 
   #phrase  = phrase.split()
-  phrasee = phrase[:]
+  phrasee = phrase[:]  # Takes a copy
 
 
   # Build a basic empty word structure (cross-reference duplicate words)

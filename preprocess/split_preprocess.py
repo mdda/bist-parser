@@ -180,7 +180,7 @@ def process_labels_rowwise():
     #  except:
     #    continue
 
-    region_graphs = []  # Do this for each image now
+    region_graphs_ids, region_graphs = [], []  # Do this for each image now
 
     regions_in_image = len(regions)
     count_region = 0
@@ -232,6 +232,7 @@ def process_labels_rowwise():
       #print "phrase:  ", region_phrase
       #print "relations: ", region_relations, '\n'
 
+      region_graphs_ids.append( region['region_id'] )
       region_graphs.append( [region_phrases, region_objects, region_attributes, region_relations] )
   
     if im<0:
@@ -240,8 +241,9 @@ def process_labels_rowwise():
       exit(0)
   
     # Now dump out the region_graphs for just this this image
-    for region_data in region_graphs:
-      regions_output.write( json.dumps( region_data, separators=(',', ':')) )  # This is compact - and in 1 row
+    for region_id, region_data in zip(region_graphs_ids, region_graphs):
+      region_data_with_ids = dict(image_id=region_graphs_im['image_id'], region_id=region_id, refs=region_data)
+      regions_output.write( json.dumps( region_data_with_ids, separators=(',', ':')) )  # This is compact - and in 1 row
       regions_output.write( "\n" )
 
 
