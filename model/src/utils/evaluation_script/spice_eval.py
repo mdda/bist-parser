@@ -254,25 +254,28 @@ def evaluate_ospice(spice_tuple, ref_tuple):
 """
 
 def evaluate_spice(spice_tuple, ref_tuple):
-  count_tuple = 0
+  count_tuple = 0  # Number of correctly found tuples
 
-  spice_predict_tuple = spice_tuple[:]
+  spice_predict_tuple = spice_tuple[:] # Takes a copy
   
   num_ref   = len(ref_tuple)
   num_pred  = len(spice_tuple)
   check_ref  = np.zeros( (num_ref,) )
   check_pred = np.zeros( (num_pred,) )
 
-  ans = []
+  #  Count the direct matches first
+  #ans = []  # unused
   for tup_id, tup in enumerate(ref_tuple):
     for spice_id, spice_tup in enumerate(spice_tuple):
       if check_pred[spice_id]==0 and tup==spice_tup:
-        ans.append(tup)
+        #ans.append(tup)  # unused
         check_ref[tup_id] = 1
         check_pred[spice_id] = 1
         count_tuple += 1
         break   
 
+  
+  # Build the 'synset' fuzzed versions
   spice_wordnet = []
   for tup_id, tup in enumerate(spice_tuple):
     tup_syns = []
@@ -280,10 +283,9 @@ def evaluate_spice(spice_tuple, ref_tuple):
       for word in tup:
         st = SemanticTuple(word)
         tup_syns.append(st.lemma_synset)
-
     spice_wordnet.append(tuple(tup_syns))
-  
 
+  # And now check them too
   for tup_id, tup in enumerate(ref_tuple):
     if check_ref[tup_id] == 1:
       continue
@@ -295,23 +297,16 @@ def evaluate_spice(spice_tuple, ref_tuple):
 
     for pred_id, pred in enumerate(spice_wordnet):
       if check_pred[pred_id]==0 and similar(tup_syns, pred):
-        count_tuple += 1 
         check_ref[tup_id]   = 1
         check_pred[pred_id] = 1
+        count_tuple += 1 
         break
       
+  # Calculate the actual spice score (as an F1)
+  p_score = 0. if num_pred==0 else count_tuple/float(num_pred)
+  s_score = 0. if num_ref==0  else count_tuple/float(num_ref)
 
-  if num_pred == 0:
-    p_score = 0
-  else:
-    p_score = count_tuple/float(num_pred)
-
-  s_score = count_tuple/float(num_ref)
-
-  if count_tuple == 0:
-    sg_score = 0
-  else:
-    sg_score = 2*p_score*s_score/(p_score+s_score)
+  sg_score = 0 if count_tuple==0 else 2*p_score*s_score/(p_score+s_score)
 
   if True and sg_score > 1.:  # This shouldn't happen
     #print(ref_tuple)
