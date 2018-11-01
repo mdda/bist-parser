@@ -161,17 +161,18 @@ def find_tuples(node_list):
     comp_obj = ' '.join(objects[obj])
 
     pred_id = node_list[OBJT_id-1].parent_id
-    pred = preds_tail_id.index(pred_id)
-    comp_pred = ' '.join(preds[pred])
+    if pred_id in preds_tail_id:  # Test to make sure something is there...
+      pred = preds_tail_id.index(pred_id)
+      comp_pred = ' '.join(preds[pred])
 
-    sub_id = node_list[pred_id-1].parent_id
-    try:
-      sub    = objects_tail_id.index(sub_id)
-      comp_sub = ' '.join(objects[sub])
-    except:
-      comp_sub = node_list[sub_id-1].word
-    
-    tuples.append((comp_sub, comp_pred, comp_obj))
+      sub_id = node_list[pred_id-1].parent_id
+      try:
+        sub    = objects_tail_id.index(sub_id)
+        comp_sub = ' '.join(objects[sub])
+      except:
+        comp_sub = node_list[sub_id-1].word
+      
+      tuples.append((comp_sub, comp_pred, comp_obj))
 
   return tuples
 
@@ -253,7 +254,7 @@ def evaluate_ospice(spice_tuple, ref_tuple):
   return sg_score
 """
 
-def evaluate_spice(spice_tuple, ref_tuple):
+def evaluate_spice(spice_tuple, ref_tuple, tuples_max=None):
   count_tuple = 0  # Number of correctly found tuples
 
   spice_predict_tuple = spice_tuple[:] # Takes a copy
@@ -301,10 +302,29 @@ def evaluate_spice(spice_tuple, ref_tuple):
         check_pred[pred_id] = 1
         count_tuple += 1 
         break
+
+
+  # Set a limit on how many tuples could possibly be identified      
+  if tuples_max is not None:
+    print("count_tuple=%d, num_pred=%d, num_ref=%d -- tuples_max=%d" % (count_tuple, num_pred, num_ref, tuples_max))
+    
+    if count_tuple>tuples_max:
+      print("count_tuple=tuples_max")
+      count_tuple=tuples_max
       
+    if num_pred>tuples_max:
+      print("num_pred=tuples_max")
+      num_pred=tuples_max
+      
+    if num_ref>tuples_max:
+      print("num_ref=tuples_max")
+      num_ref=tuples_max
+
+    
   # Calculate the actual spice score (as an F1)
   p_score = 0. if num_pred==0 else count_tuple/float(num_pred)
   s_score = 0. if num_ref==0  else count_tuple/float(num_ref)
+
 
   sg_score = 0 if count_tuple==0 else 2*p_score*s_score/(p_score+s_score)
 
@@ -340,7 +360,7 @@ def check_len(conll_path, gold_path):
   assert count_gold == refs_len
 
 
-def read_conll(conll_path, gold_path):
+def read_conll(conll_path, gold_path, limit_tuples=False):
   print(gold_path)
   print(conll_path)
   
@@ -386,6 +406,7 @@ def read_conll(conll_path, gold_path):
         print("REFERENCE tuples:\t", ref_tuples)
         
         # Use the sentence we've accumulated from CONLL
+        for s in sent: print("%s" % s)
         predict_tuples = get_tuples_from_conll(sent)
         print("PREDICT tuples  :\t", predict_tuples)
 
@@ -395,8 +416,15 @@ def read_conll(conll_path, gold_path):
           fdep.write(' ')
           fdep.write("REF: "+str(ref_tuples))
           fdep.write('\n')
+  
+        tuples_max=None
+        if limit_tuples:  # Count up the words that could possibly result in a tuple
+          phrase = set( gold_refs[0][0].split() )
+          phrase = phrase - set('a an the and'.split()) 
+          print("Max words in : ", phrase)
+          tuples_max = len(phrase)
 
-        spice_score = evaluate_spice(predict_tuples, ref_tuples)
+        spice_score = evaluate_spice(predict_tuples, ref_tuples, tuples_max=tuples_max)
         print("spice_score: ", spice_score)
         print()
         
@@ -405,6 +433,8 @@ def read_conll(conll_path, gold_path):
         
         count_gold += 1
         sent = []
+
+        #exit(0)
 
       else:
         sent.append(line)
@@ -423,13 +453,12 @@ def main():
             help="Name of the CoNLL-U file with the gold data.")
   parser.add_argument("prediction_file", type=str,
             help="Name of the CoNLL-U file with the predicted data.")
-  #parser.add_argument("epoch", type=str,
-  #                    help="Name of the CoNLL-U file with the predicted data.")
+  parser.add_argument('--limit_tuples', action='store_true')
 
   args = parser.parse_args()
 
   check_len(args.prediction_file, args.gold_file)
-  s_score = read_conll(args.prediction_file, args.gold_file)
+  s_score = read_conll(args.prediction_file, args.gold_file, limit_tuples=args.limit_tuples)
   
   print("SPICE score: %.4f" % (s_score,))
 
