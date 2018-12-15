@@ -1,11 +1,13 @@
 Scene Graph Parsing as Dependency Parsing
-===================
+=========================================================
 
 This repository contains code for Scene Graph Parsing as Dependency Parsing, NAACL 2018.
 
->    And this **fork** of the repo works much more efficiently, 
->    since parsing streaming json is *way* more efficient than manipulating the visual genome
+>    And this **fork** of the repo does the preprocessing steps much more efficiently, 
+>    since parsing streaming ```json``` is *way* more efficient than manipulating the visual genome
 >    files in 10 sections, and stitching them back together...
+>
+>    It also makes the code Python 2/3 compatible.
 
 
 If you use the code, please cite 
@@ -66,15 +68,11 @@ cat region_graphs.json | jq -n --compact-output --stream 'fromstream(1|truncate_
 3. CHECK : Set ```nltk``` wordnet path in line ~10 in ```data_to_conll.py```
 
 
-
-Run :
-```
-bash ./preprocess.sh
-```
-then run :
-
 <strike>
+Now run :
 ```
+bash ./preprocess.sh 
+# ...
 python split_preprocess.py NUM TARGET
 ```
 
@@ -83,14 +81,13 @@ We strongly suggest you to open multiple terminals to execute above commands to 
 </strike>
 
 
-The following creates the files ```./intermediate/pre_coco_train.json.rows``` and ```./intermediate/pre_coco_dev.json.rows``` :
+Now run the following, which creates the files ```./intermediate/pre_coco_train.json.rows``` and ```./intermediate/pre_coco_dev.json.rows``` :
 ```
 python split_preprocess.py 0000 coco_train
 python split_preprocess.py 0000 coco_dev
 ```
 
-Finally, run the following to convert (via the paper's Algorithm 1) 
-```./intermediate/pre_coco_XXX.json.rows``` to ```./output/coco_XXX.conll``` :
+Finally, run the following to convert (via the paper's Algorithm 1) ```./intermediate/pre_coco_XXX.json.rows``` to ```./output/coco_XXX.conll``` :
 
 ```
 python data_to_conll.py --input ./output/pre_coco_train.json.rows --output ./output/coco_train.conll --train  # i.e. this is for training
@@ -101,6 +98,8 @@ python data_to_conll.py --input ./output/pre_coco_dev.json.rows   --output ./out
 # --output: desired output
 # --train : determine whether the file is used for training or not (True if present, False if absent)
 ```
+
+This compeletes the preprocessing required.
 
 
 #### Prove Oracle numbers ...
@@ -113,11 +112,14 @@ bash eval.sh  # -> python spice_eval.py
 ```
 
 
+
 #### Training
+
 ```
 cd ./model/
 bash run.sh
 ```
+
 In run.sh, you can set the paramters
 ```
 time CUDA_VISIBLE_DEVICES=2 python src/parser.py --outdir ./output --train ./output/coco_train.conll --dev /output/coco_dev.conll \
